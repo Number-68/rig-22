@@ -1,4 +1,4 @@
-# on the todo, 
+# how to set up
 
 to run this,
 this works for next.js projects that have TS available. 
@@ -10,6 +10,7 @@ process to get it started:
 
 
 
+# to fix
 
 what must be done manually, 
 
