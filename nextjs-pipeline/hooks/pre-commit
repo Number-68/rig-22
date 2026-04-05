@@ -1,71 +1,66 @@
 #!/usr/bin/env node
 
-
-// node:child_process is the built in module 
+// node:child_process is the built in module
 // we take execSync function from it.
 const { execSync } = require("node:child_process");
-// execSync allows you to run shell commands one after another. 
+// execSync allows you to run shell commands one after another.
 // "synchonously"
 
-
 function run(cmd) {
-    try {
-        // first argument: command
-        // second argument: writes out all of the command's results to terminal for programmer to see.
-        execSync(cmd, {stdio: "inherit"});
+  try {
+    // first argument: command
+    // second argument: writes out all of the command's results to terminal for programmer to see.
+    execSync(cmd, { stdio: "inherit" });
+  } catch (err) {
+    console.error(`\n Hook failed while running: ${cmd}`);
 
-
-    } catch (err) {
-        console.error(`\n Hook failed while running: ${cmd}`);
-
-        process.exit(1);
-    }
+    process.exit(1);
+  }
 }
 
-
-function testRun(cmd){
-    try {
-        execSync(cmd, { stdio: "inherit" });
-        return true;
-    } catch {
-        return false;
-    }
+function testRun(cmd) {
+  try {
+    execSync(cmd, { stdio: "inherit" });
+    return true;
+  } catch {
+    return false;
   }
-
-
+}
 
 // begin logic.
 console.log("Hello... starting your pre-commit checks.");
 
-
-// prettier. 
+// prettier.
 console.log("checking formatting with prettier");
 
 // check if styles okay.
-const prettierOk = testRun("npx prettier --check .");
+let prettierOk = testRun("npx prettier --check .");
 //applied to variable to be checked and then acted upon.
 
-if (prettierOk){
-    console.log("Your code is looking weird...");
-    run("npx prettier --write .");
+while (!prettierOk) {
+  console.log("your code is looking weird.");
+  console.log("formatting issues found...");
+
+  run("npx prettier --write .");
+
+  // critical: changes are not being added that's why they're failing.
+  run("git add .");
+
+  prettierOk = testRun("npx prettier --check .");
 }
-else{
-    console.log("Your code is pretty!!!!");
-}
 
+console.log("Finally. it's looking pretty!!!!");
 
-
-
-// ESLint 
+// ESLint
 console.log("running ESLint");
 run("npx eslint .");
 console.log("Linting cleared!!");
-
+console.log("hi");
 
 // fine.
 console.log("all pre-commit checks passed.");
 
-// 0 means nothing wrong. 
-// git listens to terminal before continuuing with the process. 
+// 0 means nothing wrong.
+// git listens to terminal before continuuing with the process.
 // if sees 0, continues. if sees 1, exits.
 process.exit(0);

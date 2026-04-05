@@ -1,0 +1,144 @@
+# steps necessary.
+
+# name
+
+name: ci
+
+# --------------------------------------------
+# triggers
+on: push
+
+
+
+
+
+# --------------------------------------------
+# doing the tests
+
+# this is the basic format?
+# jobs:
+#   <job-id>:
+#     runs-on: <runner>
+#     steps:
+#       - <step 1>
+#       - <step 2>
+#       - ...
+
+jobs:
+  # format
+  formatter:
+    runs-on: Ubuntu-24.04
+
+    steps:
+      # ------ setup ------
+      # copies repository into machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # intsall node.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # install all dependencies.
+      - name: Install dependencies
+        run: npm ci
+
+      # ------ test --------
+
+      - name: prettierversion
+        run: npx prettier --version
+
+      - name: Prettier
+        run: npx prettier . --check
+
+  # lint
+  linter:
+    runs-on: Ubuntu-24.04
+
+    steps:
+      # ------ setup ------
+      # copies repository into machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # intsall node.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # install all dependencies.
+      - name: Install dependencies
+        run: npm ci
+
+      # ------- run test ----------
+      - name: ESLint
+        run: npx eslint .
+
+  # tsc
+
+  typecheck:
+    runs-on: Ubuntu-24.04
+    needs:
+      - formatter
+      - linter
+    steps:
+      # ------ setup ------
+      # copies repository into machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # intsall node.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # install all dependencies.
+      - name: Install dependencies
+        run: npm ci
+
+      # ---------- tests --------
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+  # unit test
+  # not integrated
+
+  # integration test
+  # not integrate
+
+  # full build test
+
+  build-test:
+    runs-on: Ubuntu-24.04
+    needs: typecheck
+
+    steps:
+      # ------ setup ------
+      # copies repository into machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # intsall node.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # install all dependencies.
+      - name: Install dependencies
+        run: npm ci
+
+      # ------------ tests --------------
+      - name: Build Next.js app
+        run: npm run build
+
+  # E2E test
+  # not integrated
