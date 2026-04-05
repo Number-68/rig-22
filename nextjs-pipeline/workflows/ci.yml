@@ -8,10 +8,6 @@ name: ci
 # triggers
 on: push
 
-
-
-
-
 # --------------------------------------------
 # doing the tests
 
@@ -56,7 +52,10 @@ jobs:
 
   # lint
   linter:
-    runs-on: Ubuntu-24.04
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       # ------ setup ------
@@ -82,10 +81,14 @@ jobs:
   # tsc
 
   typecheck:
-    runs-on: Ubuntu-24.04
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
     needs:
-      - formatter
       - linter
+      - formatter
     steps:
       # ------ setup ------
       # copies repository into machine
@@ -107,6 +110,19 @@ jobs:
       - name: TypeScript type check
         run: npx tsc --noEmit
 
+
+
+
+  # security tests
+
+
+
+
+
+
+  
+
+
   # unit test
   # not integrated
 
@@ -116,7 +132,11 @@ jobs:
   # full build test
 
   build-test:
-    runs-on: Ubuntu-24.04
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
     needs: typecheck
 
     steps:
