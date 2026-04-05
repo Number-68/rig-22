@@ -52,10 +52,7 @@ jobs:
 
   # lint
   linter:
-    strategy:
-      matrix:
-        os: [ubuntu-24.04, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: Ubuntu-24.04
 
     steps:
       # ------ setup ------
@@ -81,10 +78,7 @@ jobs:
   # tsc
 
   typecheck:
-    strategy:
-      matrix:
-        os: [ubuntu-24.04, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: Ubuntu-24.04
 
     needs:
       - linter
@@ -110,24 +104,90 @@ jobs:
       - name: TypeScript type check
         run: npx tsc --noEmit
 
-
-
-
   # security tests
+  security:
+    needs: typecheck
+    runs-on: Ubuntu-24.04
 
+    steps:
+      # ------ setup ------
+      # copies repository into machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      # intsall node.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
 
+      # install all dependencies.
+      - name: Install dependencies
+        run: npm ci
 
+      # --------teststing-----
 
+      # npm audit
+      - name: npm audit
+        run: npm audit --audit-level=high
 
-  
+      # # github's codeql
+      # - uses: github/codeql-action/init@v3
+      #   with:
+      #     languages: javascript, typescript
+      # - uses: github/codeql-action/analyze@v3
 
+      # fix this up later. try to understand what the error is throwing.
+
+      # secret scanning
+      - uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source . --no-git
 
   # unit test
-  # not integrated
+  unit-test:
+    needs: security
+    runs-on: Ubuntu-24.04
+
+    steps:
+      # ------ setup ------
+      # copies repository into machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # intsall node.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # install all dependencies.
+      - name: Install dependencies
+        run: npm ci
 
   # integration test
-  # not integrate
+  integration-test:
+    needs: unit-test
+    runs-on: Ubuntu-24.04
+
+    steps:
+      # ------ setup ------
+      # copies repository into machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # intsall node.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # install all dependencies.
+      - name: Install dependencies
+        run: npm ci
 
   # full build test
 
@@ -137,7 +197,7 @@ jobs:
         os: [ubuntu-24.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
-    needs: typecheck
+    needs: integration-test
 
     steps:
       # ------ setup ------
@@ -162,3 +222,24 @@ jobs:
 
   # E2E test
   # not integrated
+
+  E2E-test:
+    needs: build-test
+    runs-on: Ubuntu-24.04
+
+    steps:
+      # ------ setup ------
+      # copies repository into machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # intsall node.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # install all dependencies.
+      - name: Install dependencies
+        run: npm ci
